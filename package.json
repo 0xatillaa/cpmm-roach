@@ -8,6 +8,7 @@
     "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.2",
     "bs58": "^6.0.0",
+    "jito-ts": "^4.2.0",
     "prettier": "^3.6.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
