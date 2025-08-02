@@ -1,8 +1,9 @@
 import { CREATE_CPMM_POOL_AUTH, CREATE_CPMM_POOL_PROGRAM, makeSwapCpmmBaseInInstruction } from "@raydium-io/raydium-sdk-v2";
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { NATIVE_MINT, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 import { MessageV0, Transaction, TransactionMessage, VersionedMessage, VersionedTransaction } from "@solana/web3.js";
 
-async export default function createSwapTx(
+export default async function createSwapTx(
   poolId,
   payer,
   tokenA,
@@ -16,7 +17,7 @@ async export default function createSwapTx(
   observationId,
   amountIn,
   amountOut,
-  recentBlockhash
+  recentBlockhash,
 
 
   createWallets = true
@@ -24,12 +25,17 @@ async export default function createSwapTx(
   // can fit 5 swaps IX into 1 transaction
   // then 4 swap transactions in a bundle, first is taken
   // by create pool
+  console.log("args:",
+  
+  amountIn,
+amountOut);
 
+  
   const instruction = makeSwapCpmmBaseInInstruction(
     CREATE_CPMM_POOL_PROGRAM,
-    payer,
+    payer.publicKey,
     CREATE_CPMM_POOL_AUTH,
-    configId,
+    new PublicKey(configId),  
     poolId,
     tokenAccountA,
     tokenAccountB,
@@ -42,14 +48,9 @@ async export default function createSwapTx(
     observationId,
     amountIn,
     amountOut
-
-
-
-    
-
   );
   const message = new TransactionMessage({
-    payerKey: payer,
+    payerKey: payer.publicKey,
     instructions: [instruction, instruction, instruction, instruction, instruction],
     recentBlockhash
   }).compileToV0Message()

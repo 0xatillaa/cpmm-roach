@@ -1,11 +1,12 @@
 import {
-  DEV_CREATE_CPMM_POOL_AUTH,
-  DEV_CREATE_CPMM_POOL_PROGRAM,
+  CREATE_CPMM_POOL_PROGRAM,
+  CREATE_CPMM_POOL_AUTH,
   getATAAddress,
   getCreatePoolKeys,
   makeCreateCpmmPoolInInstruction,
   Raydium,
   TOKEN_WSOL,
+  getRecentBlockHash,
 } from "@raydium-io/raydium-sdk-v2";
 import {
   NATIVE_MINT,
@@ -43,22 +44,21 @@ async function main() {
   console.log(accountB);
   //get cpmm configs
   const cpmmConfigs = await raydium.api.getCpmmConfigs();
-  console.log(cpmmConfigs);
   //create token vaults
 
   //create a cpmm initialize instructions
   const poolKeys = getCreatePoolKeys({
-    programId: DEV_CREATE_CPMM_POOL_PROGRAM,
+    programId: CREATE_CPMM_POOL_PROGRAM,
     configId: new PublicKey(cpmmConfigs[0].id),
     mintA: tokenA,
     mintB: tokenB,
   });
 
   const cpmmCreate = makeCreateCpmmPoolInInstruction(
-    DEV_CREATE_CPMM_POOL_PROGRAM,
+    CREATE_CPMM_POOL_PROGRAM,
     wallet.publicKey,
     new PublicKey(cpmmConfigs[0].id),
-    DEV_CREATE_CPMM_POOL_AUTH,
+    CREATE_CPMM_POOL_AUTH,
     poolKeys.poolId,
     tokenA,
     tokenB,
@@ -70,26 +70,37 @@ async function main() {
     poolKeys.vaultB,
     wallet.publicKey,
     TOKEN_2022_PROGRAM_ID, // your tokens program id
-    TOKEN_PROGRAM_ID, // WSOL is classic
+    TOKEN_PROGRAM_ID, // WSOL program id (classic not 2022)
     poolKeys.observationId,
     amountA,
     amountB,
     Math.floor(Date.now() / 1000) + 20 //20ms
   );
-  const firstSwapTx = createSwapTx();
+  
+  const swapTx = createSwapTx(
+    poolKeys.poolId,
+    wallet,
+    tokenA,
+    tokenB,
+    accountA.publicKey,
+    accountB.publicKey,
+    poolKeys.vaultA,
+    poolKeys.vaultB,
+   new PublicKey( cpmmConfigs[0].id),
+    poolKeys.observationId,
+    amountA,
+    amountB,
+    (await connection.getRecentBlockhash()).blockhash,
+    true
+  );
 
-  const secondSwapTx = createSwapTx();
-
-  const thirdSwapTx = createSwapTx();
-
-  const fourthSwapTx = createSwapTx();
 
   jito(wallet, [
     createSwapTx,
-    firstSwapTx,
-    secondSwapTx,
-    thirdSwapTx,
-    fourthSwapTx,
+    swapTx,
+    swapTx,
+    swapTx,
+    swapTx
   ]);
 }
 
