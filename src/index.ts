@@ -13,8 +13,9 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
-import wallet from "./wallets";
+import { clusterApiUrl, Connection, Keypair, PublicKey } from "@solana/web3.js";
+import auth from "../auth.json";
+
 import createSwapTx from "./swaps";
 import jito from "./jito";
 
@@ -25,6 +26,11 @@ async function main() {
 
   const amountA = 1000;
   const amountB = 1000;
+
+  const decodedKey = new Uint8Array(
+      JSON.parse(auth.toString()) as number[]
+    );
+    const wallet = Keypair.fromSecretKey(decodedKey);
 
   const raydium = await Raydium.load({
     owner: wallet,
